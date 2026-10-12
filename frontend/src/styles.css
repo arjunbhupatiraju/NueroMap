@@ -266,3 +266,20 @@ h3 { font-size: 15px; }
   background: var(--panel-solid) !important; border: 1px solid var(--line-strong) !important; border-radius: 8px;
   font-family: var(--mono); font-size: 12px;
 }
+
+/* ---- experimental voice model page ---- */
+.vm-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.vm-stat { border: 1px solid var(--line-strong); border-radius: 14px; padding: 16px 18px; background: rgba(255, 255, 255, 0.02); }
+.vm-stat-v { font-family: var(--mono); font-size: 34px; font-weight: 500; background: linear-gradient(90deg, var(--cyan), var(--violet)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.vm-stat-l { font-size: 13px; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+.vm-people { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 8px; }
+.vm-person { height: 40px; border-radius: 10px; border: 1px solid var(--line-strong); background: rgba(255, 255, 255, 0.03); color: var(--text); font-family: var(--mono); cursor: pointer; }
+.vm-person:hover { border-color: var(--blue); }
+.vm-person.active { border-color: var(--cyan); box-shadow: 0 0 0 2px rgba(61, 224, 255, 0.25); }
+.vm-person.right { background: rgba(61, 255, 176, 0.10); border-color: rgba(61, 255, 176, 0.45); }
+.vm-person.wrong { background: rgba(255, 107, 138, 0.12); border-color: rgba(255, 107, 138, 0.5); }
+.vm-result { border-top: 1px solid var(--line); padding-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.vm-bar { position: relative; height: 12px; border-radius: 99px; background: rgba(255, 255, 255, 0.06); overflow: hidden; }
+.vm-bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--cyan), var(--violet)); transition: width .5s ease; }
+.vm-bar-mid { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 2px; background: var(--warn); opacity: .7; }
+@media (max-width: 720px) { .vm-stats { grid-template-columns: repeat(2, 1fr); } }

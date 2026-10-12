@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import baseline, demo, registry, store
 from .labs import cognitive, motor, sensors, voice
+from .research import voice_model
 
 app = FastAPI(title="NeuroMap")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -110,6 +111,22 @@ def timeline(profile: str):
 @app.post("/api/demo/seed")
 def seed_demo():
     return {"profile": demo.seed()}
+
+
+@app.get("/api/research/voice-model")
+def voice_model_summary():
+    try:
+        return voice_model.summary()
+    except (ImportError, FileNotFoundError) as e:
+        raise HTTPException(503, f"Voice model unavailable: {e}")
+
+
+@app.get("/api/research/voice-model/people/{n}")
+def voice_model_person(n: int):
+    try:
+        return voice_model.person(n)
+    except KeyError:
+        raise HTTPException(404, "No such held-out person")
 
 
 # ---------- serve built frontend if present ----------

@@ -1,13 +1,38 @@
 # NeuroMap
 
+**Know your own normal.** A computational neuroscience lab that runs on a laptop and a phone.
+
+**▶ Live demo: https://neuromap-86zk.onrender.com**  
+**🎬 Demo video:** _add your YouTube link here_
+
+Built by **Arjun Bhupatiraju** for the 2026 Congressional App Challenge (Texas District 31, TX-31).
+
 People often notice neurological change too late, and routine checkups compare you to population averages instead of to your own normal. NeuroMap helps close that gap by turning movement, speech, gait, balance, and reaction-time signals into a personal baseline and longitudinal trend map.
 
-A computational neuroscience lab that runs on a phone and a laptop. NeuroMap records five kinds of
-behavioral signal, turns each into interpretable features, learns what is normal for *you*,
+NeuroMap records five kinds of behavioral signal, turns each into interpretable features, learns what is normal for *you*,
 and tracks how your profile changes over time.
 
 > NeuroMap measures change relative to your own baseline. It is a personal experiment, not a
 > medical device, and it does not diagnose anything.
+
+## Try it
+
+1. Open the **[live demo](https://neuromap-86zk.onrender.com)**. It opens on a 10-week **Demo (synthetic)** profile
+   with a built-in motor and speech decline, so you can explore the map, Timeline, Research mode and Report right away.
+2. To run the labs yourself, type a name on the Profile page and click **Create profile**, then **New assessment**.
+   - **Motor, Voice and Cognitive labs** run on a laptop (allow camera / microphone when asked).
+   - **Gait and Balance labs** run on a phone: open the same link in Safari or Chrome and allow motion access.
+
+The free hosting plan sleeps after 15 minutes without visitors, so the first load can take about a minute.
+Assessments recorded on the live demo are temporary and may be reset; use a first name or nickname.
+
+## Screenshots
+
+![NeuroMap overview](screenshots/map.png)
+![Research mode](screenshots/research.png)
+![Timeline view](screenshots/timeline.png)
+
+## How it works
 
 ```
  CAMERA            MICROPHONE          SCREEN            PHONE IMU
@@ -25,9 +50,17 @@ and tracks how your profile changes over time.
           NEUROMAP · TIMELINE · RESEARCH MODE (every pipeline stage plotted)
 ```
 
-## Running it
+## Running it locally
 
-You need Python 3.10+ and Node 18+.
+**Quickest (Python only):** the repo includes the built frontend in `frontend/dist`, so the backend can serve everything.
+
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn neuromap.api:app --port 8000      # open http://localhost:8000
+```
+
+**Development setup** (Python 3.10+ and Node 18+), with hot reload:
 
 ```bash
 # 1. backend
@@ -44,11 +77,7 @@ npm run dev            # http://localhost:5173
 The downloadable project includes a preloaded **Demo (synthetic)** profile with a full 10-week
 history, so a fresh install opens directly to the map. Click **Load synthetic demo profile** to
 regenerate that clean demo; its raw signals are run through the real pipelines.
-## Screenshots
 
-![NeuroMap overview](screenshots/map.png)
-![Research mode](screenshots/research.png)
-![Timeline view](screenshots/timeline.png)
 ### On your phone (for the Gait and Balance labs)
 
 Phones only allow camera, microphone and motion sensors over HTTPS, so:
@@ -120,20 +149,71 @@ backend/
     demo.py          10-week demo profile with an injected motor/speech change
     store.py         SQLite
     api.py           FastAPI
+    research/        experimental Parkinson's voice model (training, serving, results/)
   tests/             pipelines must recover known ground truth from synthetic signals
 frontend/src/
   labs/              capture UIs (camera, mic, sensors, cognitive tasks)
-  pages/             Dashboard, Assessment, Timeline, Research, Report
+  pages/             Dashboard, Assessment, Timeline, Research, Report, VoiceModel
   components/        NeuroMapViz, FeatureTable
 ```
 
 Run the tests with `cd backend && python -m pytest -q`.
 
+## Experimental: Parkinson's voice model
+
+Separate from the app's personal-baseline scoring, NeuroMap includes a machine-learning model trained on
+public data to see how well voice features separate people with and without Parkinson's. It has its own
+**Voice model** page in the app, where you can run it on held-out people from the dataset.
+
+- **Data:** UCI *Parkinson's Disease Classification* (Sakar et al., 2018): 756 sustained-vowel recordings
+  from 252 people (188 with Parkinson's, 64 without), 753 voice features each.
+- **Model:** histogram gradient-boosted trees (scikit-learn), class-weighted for the 3:1 imbalance. It was
+  chosen over logistic regression, SVMs (with feature selection), random forest and extra trees by
+  cross-validation on the development people only.
+- **Testing:** 51 people (20%, stratified by diagnosis) were held out before any training and scored once
+  at the end. All splits are **grouped by person**, so a person's recordings are never in both training and
+  testing. Each person's 3 recordings are averaged into one prediction.
+
+| People never seen in training | Accuracy | Parkinson's caught | Healthy cleared | ROC AUC |
+|---|---|---|---|---|
+| Held-out test set (51 people) | 86% | 92% | 69% | 0.94 |
+| Cross-validation (201 development people) | 84% | 95% | 53% | 0.88 |
+| Logistic regression baseline (cross-validation) | 78% | 85% | 57% | 0.80 |
+| Always guessing "Parkinson's" (held-out) | 75% | 100% | 0% | 0.50 |
+
+Code: `backend/neuromap/research/train_voice_model.py` (training and evaluation),
+`backend/neuromap/research/voice_model.py` (serving), results and the trained model in
+`backend/neuromap/research/results/`.
+
+**Limits.** This is a research experiment, not a diagnostic tool. The held-out set is small (13 people
+without Parkinson's), so the numbers could shift by several points on new data, and the model still
+clears only about two-thirds of healthy voices. The dataset uses sustained "ahh" recordings with features
+NeuroMap does not compute yet, so the model is **not run on users' own voices**. The next step is a
+sustained-vowel task in the Voice Lab with matching features, validated before it scores anyone.
+
+To retrain: download the dataset from the UCI Machine Learning Repository (id 470), put
+`pd_speech_features.csv` in `backend/data/research/`, then
+
+```bash
+cd backend
+pip install -r requirements.txt -r requirements-research.txt
+python -m neuromap.research.train_voice_model
+```
+
 ## Ideas for next steps
 
 - **Test–retest reliability:** do 5 sessions over a week and compute ICC per feature. This
   tells you which features are stable enough to track.
+- **Connect the voice model:** compute the same voice features from NeuroMap's read-aloud recordings and validate the experimental model on them.
 - **Multimodal ablation:** on a paired public dataset (e.g. Sage Bionetworks mPower, which
   requires a data-access application), compare voice-only, motor-only and fused models.
 - **Change-point validation:** compare the exploratory domain-level split against a validated
   sequential method on longer, labeled histories.
+
+## Deployment
+
+The live demo runs on [Render](https://render.com)'s free plan using `render.yaml` in this repo:
+it installs `backend/requirements.txt`, seeds the demo profile, and starts
+`uvicorn neuromap.api:app`, which also serves the prebuilt frontend from `frontend/dist`.
+To deploy your own copy: Render → **New → Blueprint** → select this repo → **Apply**.
+After changing the frontend, rebuild it (`cd frontend && npm run build`) and commit `frontend/dist`.

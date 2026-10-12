@@ -27,4 +27,6 @@ export const api = {
     return req(`/assessments/${id}/labs/voice`, { method: 'POST', body: fd })
   },
   seedDemo: () => req('/demo/seed', { method: 'POST' }),
+  voiceModel: () => req('/research/voice-model'),
+  voiceModelPerson: (n) => req(`/research/voice-model/people/${n}`),
 }

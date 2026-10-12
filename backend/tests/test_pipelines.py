@@ -176,3 +176,15 @@ def test_feature_importance_is_normalized():
     weights = baseline.feature_importance(scores, "motor")
     assert sum(item["share"] for item in weights) == pytest.approx(1.0)
     assert weights[0]["key"] == "motor_interval_cv"
+
+
+def test_voice_model_endpoints():
+    from fastapi.testclient import TestClient
+    from neuromap.api import app
+    c = TestClient(app)
+    s = c.get("/api/research/voice-model").json()
+    assert s["held_out_people"] == s["held_out_test"]["people"] > 0
+    assert 0.5 < s["held_out_test"]["roc_auc"] <= 1.0
+    p = c.get("/api/research/voice-model/people/1").json()
+    assert 0.0 <= p["probability"] <= 1.0 and isinstance(p["actual_parkinsons"], bool)
+    assert c.get("/api/research/voice-model/people/9999").status_code == 404

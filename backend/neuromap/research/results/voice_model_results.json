@@ -1,0 +1,36 @@
+{
+  "dataset": "UCI Parkinson's Disease Classification (Sakar et al., 2018)",
+  "recordings": 756,
+  "people": 252,
+  "parkinsons_people": 188,
+  "features": 753,
+  "model": "gradient_boosting",
+  "evaluation": "people never seen in training; each person's recordings averaged",
+  "cross_validation_development": {
+    "logistic_regression": {
+      "people": 201,
+      "accuracy": 0.781,
+      "balanced_accuracy": 0.711,
+      "roc_auc": 0.804,
+      "sensitivity": 0.853,
+      "specificity": 0.569
+    },
+    "gradient_boosting": {
+      "people": 201,
+      "accuracy": 0.841,
+      "balanced_accuracy": 0.738,
+      "roc_auc": 0.879,
+      "sensitivity": 0.947,
+      "specificity": 0.529
+    }
+  },
+  "held_out_test": {
+    "people": 51,
+    "accuracy": 0.863,
+    "balanced_accuracy": 0.807,
+    "roc_auc": 0.937,
+    "sensitivity": 0.921,
+    "specificity": 0.692
+  },
+  "always_guess_parkinsons_accuracy": 0.745
+}

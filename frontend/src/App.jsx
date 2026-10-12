@@ -6,6 +6,7 @@ import Assessment from './pages/Assessment.jsx'
 import Timeline from './pages/Timeline.jsx'
 import Research from './pages/Research.jsx'
 import Report from './pages/Report.jsx'
+import VoiceModel from './pages/VoiceModel.jsx'
 import Logo from './components/Logo.jsx'
 
 const PAGES = [
@@ -14,6 +15,7 @@ const PAGES = [
   ['timeline', 'Timeline'],
   ['research', 'Research mode'],
   ['report', 'Report'],
+  ['model', 'Voice model'],
 ]
 const DEMO_PROFILE = 'Demo (synthetic)'
 
@@ -77,6 +79,7 @@ export default function App() {
       {registry && page === 'timeline' && <Timeline {...ctx} />}
       {registry && page === 'research' && <Research {...ctx} />}
       {registry && page === 'report' && <Report {...ctx} />}
+      {page === 'model' && <VoiceModel />}
 
       <footer className="footer">
         NeuroMap is an experimental personal project. It measures changes relative to your own baseline and is not a medical device or diagnostic tool.
